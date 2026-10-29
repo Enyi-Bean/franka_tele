@@ -1,0 +1,16 @@
+__pycache__/
+*.py[cod]
+.venv/
+.env
+.env.*
+data/
+checkpoints/
+*.mp4
+*.parquet
+*.whl
+*.tar.gz
+*.zip
+base_view.png
+wrist_view.png
+tactile_selftest_*.png
+*.log

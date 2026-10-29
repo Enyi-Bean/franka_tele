@@ -1,0 +1,7 @@
+-r requirements.txt
+# openpi_client 通信模块已随目录提供，无需另行下载 openpi 源码。
+dm-tree==0.1.10
+msgpack==1.2.1
+websockets==16.1.1
+pillow==12.3.0
+typing-extensions>=4.5,<5

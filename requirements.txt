@@ -1,0 +1,10 @@
+# Python 3.11 / Linux x86_64。版本来自原 franka_xense 环境。
+# franky-control 使用 README 中按 robot server version 选择的 pip 安装命令；无需源码。
+numpy==2.2.4
+opencv-python==4.12.0.88
+pandas==3.0.5
+pyarrow==25.0.0
+pyserial==3.5
+pyrealsense2==2.58.3.10794
+# 系统依赖：ffmpeg（需 libx264），不由 pip 安装。
+# 可选触觉：厂商提供的 xensesdk-2.1.2-cp311-cp311-linux_x86_64.whl。
