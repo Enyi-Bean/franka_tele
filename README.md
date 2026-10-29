@@ -1,5 +1,7 @@
 # U-Arm → Franka FR3 遥操与视觉触觉数据采集
 
+**简体中文** | [English](README.en.md)
+
 使用 **franky/libfranka 直接控制单臂 FR3，无需 ROS2**。支持只遥操、视觉采集、视觉＋双指触觉采集。录制时直接生成 **LeRobot v2.1** 数据，不需要额外转换，也不需要安装 lerobot 或 PyTorch。末尾提供 pi0.5 服务器推理、本地执行的示例。
 
 ## 1. 硬件与代码入口
@@ -92,10 +94,24 @@ python uarm_calibrate.py --host 192.168.3.1 --port /dev/ttyUSB0
 python gripper_init.py --host 192.168.3.1
 # 仅读状态
 python gripper_init.py --status
-python home_robot.py --dry-run
 ```
 
 标定程序会按提示移动 FR3。真机归位、开始跟随前确认运动空间与急停可用。本版本保留原控制增益和较高碰撞阈值（`teleop.py` 的 `COLLISION_*`），只遥操还保留 reflex 自动恢复逻辑；这些参数来自原设备的接触任务，交接后应由现场负责人核对。
+
+### FR3 归位到 ready 姿态
+
+先解刹车并激活 FCI，然后单独运行（先退出正在运行的遥操、采集或部署程序）：
+
+```bash
+# 只查看当前关节状态和目标姿态，不运动
+python home_robot.py --dry-run
+# 实际归位到默认 ready 姿态
+python home_robot.py
+# 更慢地归位
+python home_robot.py --factor 0.03
+```
+
+默认连接 `192.168.3.1`；地址不同时加 `--host <机械臂IP>`。实际归位会提示输入 `yes` 确认，默认速度系数为 0.05。遥操结束后也可用该命令归位。
 
 ## 4. 只遥操
 
@@ -112,12 +128,13 @@ python teleop.py --no-gripper
 
 ## 5. 遥操并采集
 
+以下命令使用代码中已有的相机默认配置：腕部 `233622077251`、第三人称 `135122077750`，不需要填写序列号参数。只有更换相机时，才增加 `--wrist-serial <腕部序列号> --base-serial <第三人称序列号>`。
+
 ### 只采视觉（腕部＋第三人称）
 
 ```bash
 python record.py --task "put the cube on the plate" \
-  --out data/cube_on_plate_vision --no-tactile \
-  --wrist-serial 233622077251 --base-serial 135122077750
+  --out data/cube_on_plate_vision --no-tactile
 ```
 
 临时只接腕部相机可再加 `--no-base`。`record.py` 默认启用触觉，因此纯视觉必须加 `--no-tactile`。
@@ -126,12 +143,10 @@ python record.py --task "put the cube on the plate" \
 
 ```bash
 python record.py --task "put the cube on the plate" \
-  --out data/cube_on_plate_tactile \
-  --wrist-serial 233622077251 --base-serial 135122077750 \
-  --tactile left=OG001273 right=OG001275
+  --out data/cube_on_plate_tactile
 ```
 
-只接一只触觉时用 `--tactile left=OG001273`。传感器接好后，按启动提示在**所有触觉表面无接触**时回车校准 Difference 基线。采集不需要单独启动 `teleop.py`。
+默认使用左 `OG001273`、右 `OG001275` 两只触觉，无需额外参数。更换触觉时用 `--tactile left=<左序列号> right=<右序列号>`；只接一只触觉时用 `--tactile left=OG001273`。传感器接好后，按启动提示在**所有触觉表面无接触**时回车校准 Difference 基线。采集不需要单独启动 `teleop.py`。
 
 | 按键 | 行为 |
 |---|---|
@@ -213,7 +228,7 @@ python test_infer.py --host localhost --port 8000
 # 接真机，按提示确认后自主执行
 python deploy_pi05.py --host localhost --port 8000 \
   --fr3-host 192.168.3.1 --prompt "put the cube on the plate" \
-  --wrist-serial 233622077251 --base-serial 135122077750 --exec-steps 10
+  --exec-steps 10
 ```
 
 服务器是独立的模型运行环境，需要由模型部署方预先提供符合下述接口的策略服务和训练权重。本目录不包含 pi0.5 模型服务端、训练代码和权重；遥操与数据采集不依赖服务器。
